@@ -74,28 +74,48 @@ def delete_pin():
 @views.route('/upload', methods=['POST'])
 @login_required
 def upload_photo():
+    print("upload_photo function started")  # Initial debug print
+
+    # Retrieve latitude and longitude from form data
+    lat = request.form.get('lat')
+    lng = request.form.get('lng')
+
+    if lat and lng:
+        lat = round(float(lat), 5)
+        lng = round(float(lng), 5)
+        print(f"Received lat: {lat}, lng: {lng}")  # Print received data
+    else:
+        print("Latitude and longitude are missing")  # Debug missing lat/lng
+        return jsonify({'success': False, 'message': 'Latitude and longitude are required'}), 400
+
+    # Query for pin with the provided lat/lng
+    pin = Pin.query.filter_by(user_id=current_user.id, latitude=lat, longitude=lng).first()
+
+    # Check for file presence in request
     if 'photo' not in request.files:
+        print("No file part in the request")  # Debug missing file part
         return jsonify({'success': False, 'message': 'No file part'}), 400
 
     file = request.files['photo']
     if file.filename == '':
+        print("No selected file")  # Debug empty filename
         return jsonify({'success': False, 'message': 'No selected file'}), 400
 
-    # Get user_id and pin_id from request (or generate defaults)
+    # Get user_id and pin_id
     user_id = request.form.get('user_id', str(current_user.id))
-    pin_id = request.form.get('pin_id', 'default_pin')
+    pin_id = request.form.get('pin_id', str(pin.id))
 
     # Create a unique directory path for the user and pin
     user_pin_folder = os.path.join(UPLOAD_FOLDER, user_id, pin_id)
+    print(f"Creating or verifying folder: {user_pin_folder}")
     os.makedirs(user_pin_folder, exist_ok=True)
 
     # Generate a unique filename
     filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{secure_filename(file.filename)}"
     file_path = os.path.join(user_pin_folder, filename)
 
+    print(f"Saving file '{filename}' to folder '{user_pin_folder}'")
     # Save the file
     file.save(file_path)
 
     return jsonify({'success': True, 'message': 'File uploaded successfully', 'file_path': file_path}), 200
-# views is a file where users can go to. so example login, homepage. Anything that
-# the user can go to.

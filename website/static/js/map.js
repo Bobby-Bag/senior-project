@@ -5,55 +5,72 @@ var map = L.map('map').setView([51.505, -0.09], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
-
+//<input type="file" id="fileInput" style="display: none;" accept="image/*">
 // Function to create a marker and add it to the map
 function createMarker(lat, lng) {
     var marker = L.marker([lat, lng]).addTo(map);
 
-    // Bind a popup to the marker with a delete option
     marker.bindPopup(
-        `<b>Marker at ${lat.toFixed(5)}, ${lng.toFixed(5)}</b><br>
-        <button onclick="deleteMarker(${lat}, ${lng})">Delete Marker</button>
-        <!-- Button to trigger file input -->
-        <button onclick="document.getElementById('fileInput').click()">Upload Photo</button>
-        <input type="file" id="fileInput" style="display: none;" onchange="uploadFile()" accept="image/*">`
+    `<b>Marker at ${lat.toFixed(5)}, ${lng.toFixed(5)}</b><br>
+    <button onclick="deleteMarker(${lat}, ${lng})">Delete Marker</button>
+    <button onclick="triggerFileInput(${lat}, ${lng})">Upload Photo</button>
+    <input type="file" id="fileInput" style="display: none;" accept="image/*">`
     ).openPopup();
 
-    // Save the marker to the database
     savePin(lat, lng);
-
-    // Return the marker instance
     return marker;
 }
 
+function triggerFileInput(lat, lng) {
+    const fileInput = document.getElementById('fileInput');
+    fileInput.dataset.lat = lat;
+    fileInput.dataset.lng = lng;
+
+    // Add an event listener that triggers uploadFile when a file is selected
+    fileInput.onchange = uploadFile;
+    fileInput.click();  // Trigger the file input dialog
+}
+
 function uploadFile() {
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
 
-        if (file) {
-            // Prepare form data for the upload
-            const formData = new FormData();
-            formData.append('photo', file);
+    // Retrieve lat and lng from data attributes
+    const lat = fileInput.dataset.lat;
+    const lng = fileInput.dataset.lng;
 
-            // Send a POST request to the server to upload the file
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Photo uploaded successfully!");
-                } else {
-                    alert("Failed to upload photo.");
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Error uploading photo.");
-            });
-        }
+    if (!file) {
+        alert("Please select a file to upload.");
+        return;
     }
+
+    if (lat === 'undefined' || lng === 'undefined') {
+        alert("Invalid latitude or longitude values.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('photo', file);
+    formData.append('lat', lat);
+    formData.append('lng', lng);
+
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Photo uploaded successfully!");
+        } else {
+            alert("Failed to upload photo: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("Error uploading photo.");
+    });
+}
 
 function createMarkersOnLoad(lat, lng) {
     var marker = L.marker([lat, lng]).addTo(map);
