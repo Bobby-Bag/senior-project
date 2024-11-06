@@ -13,7 +13,10 @@ function createMarker(lat, lng) {
     // Bind a popup to the marker with a delete option
     marker.bindPopup(
         `<b>Marker at ${lat.toFixed(5)}, ${lng.toFixed(5)}</b><br>
-        <button onclick="deleteMarker(${lat}, ${lng})">Delete Marker</button>`
+        <button onclick="deleteMarker(${lat}, ${lng})">Delete Marker</button>
+        <!-- Button to trigger file input -->
+        <button onclick="document.getElementById('fileInput').click()">Upload Photo</button>
+        <input type="file" id="fileInput" style="display: none;" onchange="uploadFile()" accept="image/*">`
     ).openPopup();
 
     // Save the marker to the database
@@ -23,13 +26,45 @@ function createMarker(lat, lng) {
     return marker;
 }
 
+function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+
+        if (file) {
+            // Prepare form data for the upload
+            const formData = new FormData();
+            formData.append('photo', file);
+
+            // Send a POST request to the server to upload the file
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Photo uploaded successfully!");
+                } else {
+                    alert("Failed to upload photo.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Error uploading photo.");
+            });
+        }
+    }
+
 function createMarkersOnLoad(lat, lng) {
     var marker = L.marker([lat, lng]).addTo(map);
 
     // Bind a popup to the marker with a delete option
     marker.bindPopup(
         `<b>Marker at ${lat.toFixed(5)}, ${lng.toFixed(5)}</b><br>
-        <button onclick="deleteMarker(${lat}, ${lng})">Delete Marker</button>`
+        <button onclick="deleteMarker(${lat}, ${lng})">Delete Marker</button>
+        <!-- Button to trigger file input -->
+        <button onclick="document.getElementById('fileInput').click()">Upload Photo</button>
+        <input type="file" id="fileInput" style="display: none;" onchange="uploadFile()" accept="image/*">`
     ).openPopup();
 
 

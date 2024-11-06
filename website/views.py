@@ -1,12 +1,16 @@
 from flask import Blueprint, render_template, request, flash, jsonify
 from flask_cors import CORS
 from flask_login import login_required, current_user
-from .models import Pin
+from .models import Pin, Photo
 from . import db
+import os
+from werkzeug.utils import secure_filename
+from datetime import datetime
 import json
 
 views = Blueprint('views', __name__)
-
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the root upload folder exists
 
 @views.route('/', methods=['GET', 'POST'])
 @login_required
@@ -67,5 +71,31 @@ def delete_pin():
 
     return jsonify({'error': 'Pin not found'}), 404
 
+@views.route('/upload', methods=['POST'])
+@login_required
+def upload_photo():
+    if 'photo' not in request.files:
+        return jsonify({'success': False, 'message': 'No file part'}), 400
+
+    file = request.files['photo']
+    if file.filename == '':
+        return jsonify({'success': False, 'message': 'No selected file'}), 400
+
+    # Get user_id and pin_id from request (or generate defaults)
+    user_id = request.form.get('user_id', str(current_user.id))
+    pin_id = request.form.get('pin_id', 'default_pin')
+
+    # Create a unique directory path for the user and pin
+    user_pin_folder = os.path.join(UPLOAD_FOLDER, user_id, pin_id)
+    os.makedirs(user_pin_folder, exist_ok=True)
+
+    # Generate a unique filename
+    filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{secure_filename(file.filename)}"
+    file_path = os.path.join(user_pin_folder, filename)
+
+    # Save the file
+    file.save(file_path)
+
+    return jsonify({'success': True, 'message': 'File uploaded successfully', 'file_path': file_path}), 200
 # views is a file where users can go to. so example login, homepage. Anything that
 # the user can go to.
