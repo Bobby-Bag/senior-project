@@ -117,5 +117,8 @@ def upload_photo():
     print(f"Saving file '{filename}' to folder '{user_pin_folder}'")
     # Save the file
     file.save(file_path)
+    new_photo = Photo(pin_id=pin_id, photo_url=file_path)
+    db.session.add(new_photo)
+    db.session.commit()
 
     return jsonify({'success': True, 'message': 'File uploaded successfully', 'file_path': file_path}), 200
