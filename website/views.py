@@ -1,3 +1,4 @@
+# Bobby add this (like the whole file) ->
 from flask import Blueprint, render_template, request, flash, jsonify
 from flask_cors import CORS
 from flask_login import login_required, current_user
@@ -71,6 +72,8 @@ def delete_pin():
 
     return jsonify({'error': 'Pin not found'}), 404
 
+# Bobby add this ->
+
 @views.route('/upload', methods=['POST'])
 @login_required
 def upload_photo():
@@ -122,3 +125,5 @@ def upload_photo():
     db.session.commit()
 
     return jsonify({'success': True, 'message': 'File uploaded successfully', 'file_path': file_path}), 200
+
+# <-

@@ -1,3 +1,4 @@
+# I cant remember if there is anything needed in here but add it just in case shouldnt affect anything adversely
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
