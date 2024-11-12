@@ -1,119 +1,251 @@
 <!DOCTYPE html>
-<html>
-<head>{% block head %}
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link
-            rel="stylesheet"
-            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-            crossorigin="anonymous"
-    />
-    <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"
-    />
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Application with Transparent Sidebar</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        /* Inline CSS for background image */
         body {
-            background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed; /* Keeps the background fixed while scrolling */
             margin: 0;
             padding: 0;
-            font-family: Roboto, sans-serif;
+            display: flex;
+        }
+        #map {
+            flex: 1;
+        }
+        #sidebar {
+            width: 250px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8); /* Transparent background */
+            border-right: 1px solid #ccc;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            background-color: #007BFF;
             color: white;
-
-            .nav-item {
-                margin-right: 30px;
-            }
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .pin-cursor {
+            cursor: url('images/pin-icon.png'), auto; /* Ensure the path is correct */
         }
     </style>
-
-    <title>{% block title %}Home{% endblock %}</title>
-{% endblock %}</head>
-
+</head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <button
-            class="navbar-toggler"
-            type="button"
-            data-toggle="collapse"
-            data-target="#navbar"
-    >
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbar">
-
-        <div class="navbar-nav">
-            {% if user.is_authenticated %}
-                <a class="nav-item nav-link" id="home" href="/">Home</a>
-                <a class="nav-item nav-link" id="account" href="/account">Account</a>
-                <a class="nav-item nav-link" id="settings" href="/settings">Settings</a>
-                <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-            {% else %}
-                <a class="nav-item nav-link" id="login" href="/login">Login</a>
-                <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
-            {% endif %}
-        </div>
+    <div id="sidebar">
+        <input type="text" id="searchInput" placeholder="Search for a location...">
+        <button onclick="searchLocation()">Search</button>
+        <button id="addPinButton">Add Pin</button>
+        <button id="deletePinButton">Delete Pin</button>
     </div>
-</nav>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([51.505, -0.09], 13);
 
-<!-- Flash messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            {% if category == 'error' %}
-                <div class="alert alert-danger alter-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button
-                            type="button"
-                            class="close"
-                            data-dismiss="alert"
-                            aria-label="Close"
-                    >
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {% else %}
-                <div class="alert alert-success alter-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button
-                            type="button"
-                            class="close"
-                            data-dismiss="alert"
-                            aria-label="Close"
-                    >
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+        // Add tile layer to the map
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
+        // Layer for storing markers
+        var markerLayer = L.layerGroup().addTo(map);
+        var isAddPinMode = false;
 
-<div class="container">{% block content %} {% endblock %}</div>
+        // Add pin button event listener
+        document.getElementById('addPinButton').addEventListener('click', function() {
+            isAddPinMode = true;
+            document.body.classList.add('pin-cursor');  // Add CSS class to change cursor
+            console.log("Add Pin mode is now active.");
+        });
 
-<script
-        src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-        crossorigin="anonymous"
-></script>
-<script
-        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-        crossorigin="anonymous"
-></script>
-<script
-        src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-        crossorigin="anonymous"
-></script>
-<script
-        src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"
-></script>
+        // Map click event for adding markers
+        map.on('click', function(e) {
+            if (isAddPinMode) {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+                var title = "Marker";
 
-{% block javascript %}
-    <script src="../static/js/map.js"></script>
-{% endblock %}
+                createMarker(lat, lng, title);
+                isAddPinMode = false;
+                document.body.classList.remove('pin-cursor');  // Remove CSS class to revert cursor
+                console.log("Add Pin mode is now disabled.");
+            }
+        });
+
+        // Function to create a marker
+        function createMarker(lat, lng, title) {
+            var marker = L.marker([lat, lng], { title: title }).addTo(markerLayer);
+            var fileInputId = 'fileInput-' + lat + '-' + lng;
+
+            marker.bindPopup(
+                `<b>Marker at ${lat.toFixed(5)}, ${lng.toFixed(5)}</b><br>
+                <button onclick="deleteMarker(${lat}, ${lng})">Delete Marker</button>
+                <button onclick="triggerFileInput('${fileInputId}', ${lat}, ${lng})">Upload Photo</button>
+                <input type="file" id="${fileInputId}" style="display: none;" accept="image/*">`
+            ).openPopup();
+
+            savePin(lat, lng);
+            return marker;
+        }
+
+        // Function to save a pin to the server
+        function savePin(lat, lng) {
+            fetchData('/add_pin', 'POST', { lat, lng })
+                .then(data => {
+                    if (data.message) {
+                        console.log('Pin added successfully:', data.message);
+                    } else {
+                        console.error('Failed to add pin. Server response:', data);
+                    }
+                })
+                .catch(error => console.error('Error adding pin:', error));
+        }
+
+        // Function to delete a marker
+        function deleteMarker(lat, lng) {
+            fetchData('/delete_pin', 'POST', { lat, lng })
+                .then(data => {
+                    if (data.message) {
+                        map.eachLayer(function (layer) {
+                            if (layer instanceof L.Marker && layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
+                                map.removeLayer(layer);
+                            }
+                        });
+                        console.log('Marker deleted successfully.');
+                    } else {
+                        alert('Error deleting pin!');
+                    }
+                })
+                .catch(error => console.error('Error deleting pin:', error));
+        }
+
+        // Function to trigger file input
+        function triggerFileInput(fileInputId, lat, lng) {
+            var fileInput = document.getElementById(fileInputId);
+            fileInput.click();
+
+            fileInput.onchange = function(event) {
+                var file = event.target.files[0];
+                uploadFile(file, lat, lng).then((imageUrl) => {
+                    if (imageUrl) {
+                        setMarkerIcon(lat, lng, imageUrl);
+                    }
+                });
+            };
+        }
+
+        // Function to upload a file
+        function uploadFile(file, lat, lng) {
+            if (!file) return;
+
+            var formData = new FormData();
+            formData.append("file", file);
+            formData.append("lat", lat);
+            formData.append("lng", lng);
+
+            return fetch('/upload_photo', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message && data.imageUrl) {
+                    alert('Photo uploaded successfully!');
+                    return data.imageUrl;
+                } else {
+                    alert('Error uploading photo.');
+                    return null;
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading photo:', error);
+                return null;
+            });
+        }
+
+        // Function to set a custom marker icon
+        function setMarkerIcon(lat, lng, imageUrl) {
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.Marker && layer.getLatLng().lat === lat && layer.getLatLng().lng === lng) {
+                    var customIcon = L.icon({
+                        iconUrl: imageUrl,
+                        iconSize: [50, 50],
+                        iconAnchor: [25, 25],
+                        popupAnchor: [0, -25]
+                    });
+
+                    layer.setIcon(customIcon);
+
+                    var newPopupContent = `<b>Marker at ${lat.toFixed(5)}, ${lng.toFixed(5)}</b><br>
+                        <img src="${imageUrl}" alt="Uploaded Image" style="max-width: 100%; height: auto;"><br>
+                        <button onclick="deleteMarker(${lat}, ${lng})">Delete Marker</button>
+                        <button onclick="triggerFileInput('fileInput-${lat}-${lng}', ${lat}, ${lng})">Upload Photo</button>
+                        <input type="file" id="fileInput-${lat}-${lng}" style="display: none;" accept="image/*">`;
+
+                    layer.setPopupContent(newPopupContent).openPopup();
+                }
+            });
+        }
+
+        // Function to fetch data from the server
+        function fetchData(url, method, data) {
+            return fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .catch(error => {
+                console.error('Fetch error:', error);
+                throw error;
+            });
+        }
+
+        // Function to search for a location
+        function searchLocation() {
+            var searchInput = document.getElementById('searchInput').value;
+            var url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchInput)}&format=json&limit=1`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        var lat = data[0].lat;
+                        var lon = data[0].lon;
+                        console.log(`Found location: ${lat}, ${lon}`);
+
+                        // Use flyTo for a smooth and quick transition with a less close zoom level
+                        map.flyTo(new L.LatLng(lat, lon), 10, { // Change zoom level as needed
+                            duration: 2, // Duration in seconds, adjust as needed
+                            easeLinearity: 0.25 // Adjust easing for smoothness
+                        });
+                    } else {
+                        alert('Location not found.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
 </body>
 </html>
