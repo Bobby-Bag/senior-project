@@ -1,7 +1,18 @@
 // Bobby add all of this (very important)  ->
 
-// Initialize the map and set its view
-var map = L.map('map').setView([51.505, -0.09], 13);
+// THOMAS CHANGED THIS TO ADD BOUNDARIES TO THE MAP
+var map = L.map('map', {
+    // Set the initial view to a coordinate and zoom level suitable for your use-case
+    center: [29.7604, -95.3698], // Example coordinates (can be customized)
+    zoom: 6, // Initial zoom level
+    minZoom: 3, // Set the minimum zoom level to lock how far you can zoom out
+    maxBounds: [
+        // Full bounds for the entire Earth
+        [-95, -185], // Southwest bounds
+        [95, 185]   // Northeast bounds
+    ],
+    maxBoundsViscosity: 0.9 // Ensures the map does not move outside these bounds
+});
 
 // Load and display the tile layer from OpenStreetMap
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
