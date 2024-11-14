@@ -9,6 +9,22 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 //<input type="file" id="fileInput" style="display: none;" accept="image/*">
 // Function to create a marker and add it to the map
+
+// THOMAS NGUYEN ADDED Geocoder (search bar) control to the map for SEARCH BAR
+var geocoder = L.Control.Geocoder.nominatim();
+L.Control.geocoder({
+    position: 'topleft', // Positioning the search bar at the top-left
+    geocoder: geocoder,
+    placeholder: "Search for a location...", // Placeholder text in the search bar
+    defaultMarkGeocode: false // Prevent default behavior of dropping a pin
+})
+.on('markgeocode', function(e) {
+    // Custom behavior to update map's view without dropping a pin
+    var bbox = e.geocode.bbox;
+    map.flyToBounds(bbox, { animate: true, duration: 2 }); // Smoothly zoom to the searched location
+})
+.addTo(map);
+
 function createMarker(lat, lng) {
     var marker = L.marker([lat, lng]).addTo(map);
 

@@ -4,14 +4,19 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link
-            rel="stylesheet"
-            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-            crossorigin="anonymous"
+        rel="stylesheet"
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        crossorigin="anonymous"
     />
     <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"
     />
+
+    <!-- THOMAS NGUYEN INCLUDED THESE FOR SEARCH BAR Including CSS for Leaflet and Control.Geocoder -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
     <style>
         /* Inline CSS for background image */
         body {
@@ -24,10 +29,16 @@
             padding: 0;
             font-family: Roboto, sans-serif;
             color: white;
+        }
 
-            .nav-item {
-                margin-right: 30px;
-            }
+        .nav-item {
+            margin-right: 30px;
+        }
+
+        /* THOMAS NGUYEN ADDED #map for search bar */
+        #map {
+            width: 100%;
+            height: 500px; /* Adjust the height according to your requirements */
         }
     </style>
 
@@ -37,10 +48,10 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <button
-            class="navbar-toggler"
-            type="button"
-            data-toggle="collapse"
-            data-target="#navbar"
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbar"
     >
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -65,25 +76,25 @@
     {% if messages %}
         {% for category, message in messages %}
             {% if category == 'error' %}
-                <div class="alert alert-danger alter-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{ message }}
                     <button
-                            type="button"
-                            class="close"
-                            data-dismiss="alert"
-                            aria-label="Close"
+                        type="button"
+                        class="close"
+                        data-dismiss="alert"
+                        aria-label="Close"
                     >
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
             {% else %}
-                <div class="alert alert-success alter-dismissible fade show" role="alert">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ message }}
                     <button
-                            type="button"
-                            class="close"
-                            data-dismiss="alert"
-                            aria-label="Close"
+                        type="button"
+                        class="close"
+                        data-dismiss="alert"
+                        aria-label="Close"
                     >
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -94,26 +105,32 @@
 {% endwith %}
 
 
-<div class="container">{% block content %} {% endblock %}</div>
+<!-- THOMAS NGUYEN added Map container for SEARCH BAR  -->
+<div class="container">
+    {% block content %}
+    <div id="map"></div> <!-- Map container -->
+    {% endblock %}
+</div>
+
+<!-- THOMAS NGUYEN Adding JavaScript for Leaflet and Control.Geocoder FOR SEARCH BAR -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 <script
-        src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-        crossorigin="anonymous"
+    src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    crossorigin="anonymous"
 ></script>
 <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-        crossorigin="anonymous"
+    src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    crossorigin="anonymous"
 ></script>
 <script
-        src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-        crossorigin="anonymous"
-></script>
-<script
-        src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    crossorigin="anonymous"
 ></script>
 
 {% block javascript %}
-    <script src="../static/js/map.js"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 {% endblock %}
 </body>
 </html>
