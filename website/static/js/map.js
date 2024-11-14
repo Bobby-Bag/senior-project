@@ -10,6 +10,34 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 //<input type="file" id="fileInput" style="display: none;" accept="image/*">
 // Function to create a marker and add it to the map
 
+
+// THOMAS NGUYEN ADDED  ESRI Satellite layer to the map FOR SAT VIEWS 5x code "vars"
+// Add the default OpenStreetMap tile layer to the map
+var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+});
+
+// Add the ESRI Satellite layer to the map
+var esriSatellite = L.esri.basemapLayer('Imagery');
+
+// Add the CartoDB Dark Matter tile layer for night mode
+var darkMatter = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>'
+});
+
+// Create a baseMaps object to hold all the tile layers
+var baseMaps = {
+    "Street View": osmLayer,
+    "Satellite View": esriSatellite,
+    "Night Mode": darkMatter,
+};
+
+// Add the default OpenStreetMap layer to the map
+osmLayer.addTo(map);
+
+// Add layer control to the map to toggle between Street View and Satellite View
+L.control.layers(baseMaps).addTo(map);
+
 // THOMAS NGUYEN ADDED Geocoder (search bar) control to the map for SEARCH BAR
 var geocoder = L.Control.Geocoder.nominatim();
 L.Control.geocoder({

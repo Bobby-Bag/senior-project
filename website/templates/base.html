@@ -18,28 +18,50 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 
     <style>
-        /* Inline CSS for background image */
-        body {
-            background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed; /* Keeps the background fixed while scrolling */
-            margin: 0;
-            padding: 0;
-            font-family: Roboto, sans-serif;
-            color: white;
-        }
 
-        .nav-item {
-            margin-right: 30px;
-        }
 
-        /* THOMAS NGUYEN ADDED #map for search bar */
-        #map {
-            width: 100%;
-            height: 500px; /* Adjust the height according to your requirements */
-        }
+        /* THOMAS NGUYEN UPDATED MAP TO FILL OUT THE ENTIRE SCREEN */
+html, body {
+    height: 100%; /* Ensure that the body and html take up the entire viewport */
+    margin: 0; /* Remove default margin */
+}
+
+body {
+    background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    font-family: Roboto, sans-serif;
+    color: white;
+}
+
+#map {
+    position: fixed; /* Keep the map fixed to the viewport */
+    top: 56px; /* Move the map down by 20px to avoid overlap with the navbar */
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 76px); /* Ensure the map fills the remaining height of the screen, minus the navbar and the added space */
+    z-index: 0; /* Map stays in the background */
+}
+
+/* Ensure the content above the map is clickable */
+.container {
+    position: relative;
+    z-index: 1; /* Ensure content is above the map */
+}
+
+.navbar {
+    position: fixed; /* Ensure navbar stays at the top of the page */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10; /* Ensure the navbar is above the map */
+}
+
+.nav-item {
+    margin-right: 30px;
+}
     </style>
 
     <title>{% block title %}Home{% endblock %}</title>
@@ -115,6 +137,10 @@
 <!-- THOMAS NGUYEN Adding JavaScript for Leaflet and Control.Geocoder FOR SEARCH BAR -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<!-- THOMAS NGUYEN ADDING Include ESRI Leaflet JS library for ESRI layers satellite images -->
+<script src="https://unpkg.com/esri-leaflet/dist/esri-leaflet.js"></script>
+
 
 <script
     src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
