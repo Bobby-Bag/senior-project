@@ -5,12 +5,15 @@ from flask_login import login_required, current_user
 from .models import Pin, Photo
 from . import db
 import os
+from flask import send_from_directory
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import json
 
 views = Blueprint('views', __name__)
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = "/website/uploads"
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the root upload folder exists
 
 @views.route('/', methods=['GET', 'POST'])
@@ -19,6 +22,11 @@ def home():
 
     return render_template("home.html", user=current_user)
 
+
+
+@views.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 # Route to get all pins for the logged-in user
 @views.route('/get_pins', methods=['GET'])
@@ -72,10 +80,45 @@ def delete_pin():
 
     return jsonify({'error': 'Pin not found'}), 404
 
-# Bobby add this ->
+@views.route('/get_pin', methods=['GET'])
+@login_required
+def get_pin():
+    # Retrieve latitude and longitude from query parameters
+    lat = request.args.get('lat')
+    lng = request.args.get('lng')
+
+    if not lat or not lng:
+        return jsonify({'success': False, 'message': 'Latitude and longitude are required'}), 400
+
+    try:
+        # Convert to float with rounding to match precision
+        lat = round(float(lat), 5)
+        lng = round(float(lng), 5)
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid latitude or longitude format'}), 400
+
+    # Query for the pin with the provided latitude and longitude
+    pin = Pin.query.filter_by(user_id=current_user.id, latitude=lat, longitude=lng).first()
+    if not pin:
+        return jsonify({'success': False, 'message': 'Pin not found'}), 404
+
+    # Retrieve all photos associated with the pin
+    photos = Photo.query.filter_by(pin_id=pin.id).all()
+    photo_urls = [photo.photo_url for photo in photos]
+
+    # Return pin data along with photo URLs
+    return jsonify({
+        'success': True,
+        'pin': {
+            'lat': lat,
+            'lng': lng,
+            'photos': photo_urls
+        }
+    }), 200
+
 
 @views.route('/upload', methods=['POST'])
-@login_required
+# @login_required  # Temporarily comment out for debugging if needed
 def upload_photo():
     print("upload_photo function started")  # Initial debug print
 
@@ -84,9 +127,13 @@ def upload_photo():
     lng = request.form.get('lng')
 
     if lat and lng:
-        lat = round(float(lat), 5)
-        lng = round(float(lng), 5)
-        print(f"Received lat: {lat}, lng: {lng}")  # Print received data
+        try:
+            lat = round(float(lat), 5)
+            lng = round(float(lng), 5)
+            print(f"Received lat: {lat}, lng: {lng}")  # Print received data
+        except ValueError as e:
+            print("Error converting lat/lng to float:", e)
+            return jsonify({'success': False, 'message': 'Invalid latitude or longitude format'}), 400
     else:
         print("Latitude and longitude are missing")  # Debug missing lat/lng
         return jsonify({'success': False, 'message': 'Latitude and longitude are required'}), 400
@@ -110,7 +157,7 @@ def upload_photo():
 
     # Create a unique directory path for the user and pin
     user_pin_folder = os.path.join(UPLOAD_FOLDER, user_id, pin_id)
-    print(f"Creating or verifying folder: {user_pin_folder}")
+    print(f"Creating folder: {user_pin_folder}")
     os.makedirs(user_pin_folder, exist_ok=True)
 
     # Generate a unique filename
@@ -124,6 +171,79 @@ def upload_photo():
     db.session.add(new_photo)
     db.session.commit()
 
-    return jsonify({'success': True, 'message': 'File uploaded successfully', 'file_path': file_path}), 200
+    # Fetch all photos for this pin
+    photos = Photo.query.filter_by(pin_id=pin.id).all()
+    photo_urls = [photo.photo_url for photo in photos]
 
-# <-
+    return jsonify({
+        'success': True,
+        'message': 'File uploaded successfully',
+        'file_path': file_path,
+        'photos': photo_urls
+    }), 200
+def get_pin():
+    # Retrieve latitude and longitude from query parameters
+    lat = request.args.get('lat')
+    lng = request.args.get('lng')
+
+    if not lat or not lng:
+        return jsonify({'success': False, 'message': 'Latitude and longitude are required'}), 400
+
+    try:
+        # Convert to float with rounding to match precision
+        lat = round(float(lat), 5)
+        lng = round(float(lng), 5)
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid latitude or longitude format'}), 400
+
+    # Query for the pin with the provided latitude and longitude
+    pin = Pin.query.filter_by(user_id=current_user.id, latitude=lat, longitude=lng).first()
+    if not pin:
+        return jsonify({'success': False, 'message': 'Pin not found'}), 404
+
+    # Retrieve all photos associated with the pin
+    photos = Photo.query.filter_by(pin_id=pin.id).all()
+    photo_urls = [photo.photo_url for photo in photos]
+
+    # Return pin data along with photo URLs
+    return jsonify({
+        'success': True,
+        'pin': {
+            'lat': lat,
+            'lng': lng,
+            'photos': photo_urls
+        }
+    }), 200
+
+@views.route('/delete_photos', methods=['GET'])
+@login_required
+def delete_photos():
+    # Retrieve latitude and longitude from query parameters
+    lat = request.args.get('lat')
+    lng = request.args.get('lng')
+
+    if not lat or not lng:
+        return jsonify({'success': False, 'message': 'Latitude and longitude are required'}), 400
+
+    try:
+        # Convert to float with rounding to match precision
+        lat = round(float(lat), 5)
+        lng = round(float(lng), 5)
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid latitude or longitude format'}), 400
+
+    # Query for the pin with the provided latitude and longitude
+    pin = Pin.query.filter_by(user_id=current_user.id, latitude=lat, longitude=lng).first()
+    if not pin:
+        return jsonify({'success': False, 'message': 'Pin not found'}), 404
+
+    # Retrieve all photos associated with the pin
+    photos = Photo.query.filter_by(pin_id=pin.id).all()
+    #photo_urls = [photo.photo_url for photo in photos]
+    if photos != '':
+        for photo in photos:
+            db.session.delete(photo)
+        db.session.commit()
+        return jsonify({'message': 'Photo deleted successfully'})
+
+    return jsonify({'error': 'Photos not found'}), 404
