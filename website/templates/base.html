@@ -1,95 +1,116 @@
 <!DOCTYPE html>
 <html>
-<head>{% block head %}
+<head>
+    {% block head %}
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link
-        rel="stylesheet"
-        href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        crossorigin="anonymous"
-    />
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"
-    />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"/>
 
-    <!-- THOMAS NGUYEN INCLUDED THESE FOR SEARCH BAR Including CSS for Leaflet and Control.Geocoder -->
+    <!-- Including CSS for Leaflet and Control.Geocoder -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 
     <style>
+        /* Updated map to fill out the entire screen */
+        html, body {
+            height: 100%; /* Ensure that the body and html take up the entire viewport */
+            margin: 0; /* Remove default margin */
+        }
 
+        body {
+            background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: Roboto, sans-serif;
+            color: white;
+        }
 
-        /* THOMAS NGUYEN UPDATED MAP TO FILL OUT THE ENTIRE SCREEN */
-html, body {
-    height: 100%; /* Ensure that the body and html take up the entire viewport */
-    margin: 0; /* Remove default margin */
-}
+        #map {
+            position: fixed; /* Keep the map fixed to the viewport */
+            top: 65px; /* Move the map down by 20px to avoid overlap with the navbar */
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 76px); /* Ensure the map fills the remaining height of the screen, minus the navbar and the added space */
+            z-index: 0; /* Map stays in the background */
+        }
 
-body {
-    background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    font-family: Roboto, sans-serif;
-    color: white;
-}
+        /* Ensure the content above the map is clickable */
+        .container {
+            position: relative;
+            z-index: 1; /* Ensure content is above the map */
+        }
 
-#map {
-    position: fixed; /* Keep the map fixed to the viewport */
-    top: 56px; /* Move the map down by 20px to avoid overlap with the navbar */
-    left: 0;
-    width: 100%;
-    height: calc(100vh - 76px); /* Ensure the map fills the remaining height of the screen, minus the navbar and the added space */
-    z-index: 0; /* Map stays in the background */
-}
+        .navbar {
+            position: fixed; /* Ensure navbar stays at the top of the page */
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10; /* Ensure the navbar is above the map */
+        }
 
-/* Ensure the content above the map is clickable */
-.container {
-    position: relative;
-    z-index: 1; /* Ensure content is above the map */
-}
+        .nav-item {
+            margin-right: 30px;
+        }
 
-.navbar {
-    position: fixed; /* Ensure navbar stays at the top of the page */
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 10; /* Ensure the navbar is above the map */
-}
+        .home-icon,
+        .profile-img {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 6px 10px black;
+        }
 
-.nav-item {
-    margin-right: 30px;
-}
+        .home-icon {
+            border-radius: 0%;
+        }
+
+        .navbar {
+            background: linear-gradient(to right, #354C9A, #354C9A);
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        }
+
     </style>
 
     <title>{% block title %}Home{% endblock %}</title>
-{% endblock %}</head>
-
+    {% endblock %}
+</head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbar"
-    >
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbar">
-
-        <div class="navbar-nav">
-            {% if user.is_authenticated %}
-                <a class="nav-item nav-link" id="home" href="/">Home</a>
-                <a class="nav-item nav-link" id="account" href="/account">Account</a>
-                <a class="nav-item nav-link" id="settings" href="/settings">Settings</a>
-                <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-            {% else %}
+        {% if user.is_authenticated %}
+        <a class="navbar-brand" href="/">
+            <img src="/static/Icons/Home.png" alt="Home" style="height:40px;">
+        </a> <!-- Missing closing tag fixed here -->
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item Dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbar-Dropdown" role="button" data-toggle="dropdown">
+                    <img src="{{ user.profile_pic | default('/path/to/default/image.jpeg') }}" alt="Image" class="profile-img">
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="/profile">Profile</a>
+                    <a class="dropdown-item" href="/settings">Settings</a>
+                    <a class="dropdown-item" href="/logout">Logout</a>
+                </div>
+            </li>
+        </ul>
+        {% else %}
+        <ul class="navbar-nav">
+            <li class="nav-item">
                 <a class="nav-item nav-link" id="login" href="/login">Login</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
-            {% endif %}
-        </div>
+            </li>
+        </ul>
+        {% endif %}
     </div>
 </nav>
 
@@ -98,65 +119,44 @@ body {
     {% if messages %}
         {% for category, message in messages %}
             {% if category == 'error' %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button
-                        type="button"
-                        class="close"
-                        data-dismiss="alert"
-                        aria-label="Close"
-                    >
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
             {% else %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button
-                        type="button"
-                        class="close"
-                        data-dismiss="alert"
-                        aria-label="Close"
-                    >
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
             {% endif %}
         {% endfor %}
     {% endif %}
 {% endwith %}
 
-
-<!-- THOMAS NGUYEN added Map container for SEARCH BAR  -->
+<!-- Map container -->
 <div class="container">
     {% block content %}
-    <div id="map"></div> <!-- Map container -->
+    <div id="map"></div>
     {% endblock %}
 </div>
 
-<!-- THOMAS NGUYEN Adding JavaScript for Leaflet and Control.Geocoder FOR SEARCH BAR -->
+<!-- Including JavaScript for Leaflet and Control.Geocoder -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
-<!-- THOMAS NGUYEN ADDING Include ESRI Leaflet JS library for ESRI layers satellite images -->
+<!-- Including ESRI Leaflet JS library for ESRI layers satellite images -->
 <script src="https://unpkg.com/esri-leaflet/dist/esri-leaflet.js"></script>
 
-
-<script
-    src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-    crossorigin="anonymous"
-></script>
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-    crossorigin="anonymous"
-></script>
-<script
-    src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-    crossorigin="anonymous"
-></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
 
 {% block javascript %}
-    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
 {% endblock %}
 </body>
 </html>

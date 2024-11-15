@@ -1,6 +1,15 @@
-{% extends "base.html" %} {% block title %}Travel Organizer - Login{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% block title %}Travel Organizer - Login{% endblock %}
+{% block content %}
+    <style>
+        .login-header {
+            margin-top: 90px; /* Adjust this value as needed */
+            text-align: center;
+            font-size: 3em;
+        }
+    </style>
     <form method="POST">
-        <h1 align="center">Login</h1>
+        <h1 class="login-header" align="center">Login</h1>
         <div class="form-group">
             <label for="email">Email Address</label>
             <input
