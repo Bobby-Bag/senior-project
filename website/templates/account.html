@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.first_name }}'s Account</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .link-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .link-container a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .link-container a:hover {
+            text-decoration: underline;
+        }
+        .divider {
+            margin: 20px 0;
+            border-bottom: 1px solid #ccc;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ user.first_name }}'s Account</h1>
+        <form method="POST">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ user.email }}" required>
+
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" required>
+
+            <div class="divider"></div>
+
+            <h2>Change Password</h2>
+            <label for="password1">New Password (leave blank if not changing):</label>
+            <input type="password" id="password1" name="password1">
+
+            <label for="password2">Confirm New Password:</label>
+            <input type="password" id="password2" name="password2">
+
+            <button type="submit">Update Account</button>
+        </form>
+
+        <div class="divider"></div>
+
+        <h2>Activity Log</h2>
+        <ul>
+            <li>Last login: {{ user.last_login }}</li>
+            <li>Last password change: {{ user.last_password_change }}</li>
+            <!-- Additional activity log items can go here -->
+        </ul>
+
+        <div class="divider"></div>
+
+        <div class="link-container">
+            <a href="{{ url_for('auth.logout') }}">Logout</a> | <a href="{{ url_for('views.home') }}">Back to Home</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2023 Your Company. All rights reserved.</p>
+    </div>
+</body>
+</html>

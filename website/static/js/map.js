@@ -224,3 +224,4 @@ document.addEventListener('DOMContentLoaded', function() {
         pins.forEach(pin => createMarkersOnLoad(parseFloat(pin.lat), parseFloat(pin.lng)));
     }).catch(error => console.error('Error loading pins:', error));
 });
+
