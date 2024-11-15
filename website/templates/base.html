@@ -80,6 +80,58 @@ body {
     background-color: white; /* White background for popup */
 }
 
+.map-photo {
+    margin: 5px;
+    object-fit: contain;
+    transition: width 0.2s, height 0.2s;
+    max-width: 150px; /* Increased maximum width */
+    max-height: 150px; /* Increased maximum height */
+}
+
+/* Element directly wrapping the popup content */
+.leaflet-popup-content-wrapper {
+    border: none !important;  /* Remove border */
+    padding: 0 !important;    /* Remove padding */
+    background: none !important; /* Remove background */
+    box-shadow: none !important; /* Remove any shadow */
+}
+
+/* Remove the small arrow attached to the popup */
+.leaflet-popup-tip-container {
+    display: none !important; /* Remove arrow */
+}
+
+/* Direct wrapper around the popup */
+.leaflet-popup-content {
+    margin: 0 !important;     /* Remove margin */
+    padding: 0 !important;    /* Remove padding */
+    background: none !important; /* Remove background */
+    width: auto !important;   /* Adjust width to fit content */
+    height: auto !important;  /* Adjust height to fit content */
+}
+
+/* Wrapper around the entire popup, including close button */
+.leaflet-popup {
+    background: transparent !important; /* Ensure transparency */
+    border: none !important;  /* Remove any border */
+    padding: 0 !important;    /* Remove padding */
+    box-shadow: none !important; /* Remove any shadow */
+    width: auto !important;   /* Adjust width to fit content */
+    height: auto !important;  /* Adjust height to fit content */
+}
+
+/* Custom popup content */
+.popup-content {
+    background: transparent !important; /* Ensure transparency */
+    width: auto; /* Adjust width to fit content */
+    height: auto; /* Adjust height to fit content */
+}
+
+/* Hide the close button for Leaflet popups */
+.leaflet-popup-close-button {
+    display: none !important;
+}
+
     </style>
 
     <title>{% block title %}Home{% endblock %}</title>

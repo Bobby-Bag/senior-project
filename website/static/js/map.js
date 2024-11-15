@@ -132,18 +132,24 @@ function adjustImageSizes() {
     const zoom = map.getZoom();
     const images = document.querySelectorAll('.map-photo');
 
-    // Adjust the size based on zoom level with a controlled range
-    const minSize = 50;  // Minimum size for the images
-    const maxSize = 100; // Maximum size for the images
+    // Set new minimum and maximum sizes for the images
+    const minSize = 100;   // Increased minimum size
+    const maxSize = 200;  // Increased maximum size
 
-    // Adjust the size based on zoom level. Modify this to change initial/maximum/minimum sizes
-    const size = Math.max(30, Math.min(100, zoom * 10));
+    // Calculate the size based on the zoom level, ensure it's within [minSize, maxSize] range
+    const size = Math.min(maxSize, Math.max(minSize, zoom * 10));
 
     images.forEach(img => {
         img.style.width = `${size}px`;
         img.style.height = `${size}px`;
+        img.style.objectFit = 'contain'; // Ensure image retains its aspect ratio
+        img.style.transition = 'width 0.2s, height 0.2s'; // Smooth transition for size change
+        img.style.maxWidth = `${maxSize}px`; // Maximum width to prevent overflow
+        img.style.maxHeight = `${maxSize}px`; // Maximum height to prevent overflow
     });
 }
+
+
 
 // Function to initialize or show the popup with the content
 function showPopup(lat, lng, photos = []) {
@@ -207,11 +213,12 @@ function uploadFile() {
 }
 
 // Function to update marker popup content
+// Call this function whenever the popup content is shown or updated
 function updateMarkerPopup(lat, lng) {
     const roundedLat = lat.toFixed(5);
     const roundedLng = lng.toFixed(5);
-
     const marker = markers[`${roundedLat},${roundedLng}`];
+
     if (!marker) {
         console.error(`Marker not found for coordinates: ${roundedLat}, ${roundedLng}`);
         return;
@@ -222,13 +229,12 @@ function updateMarkerPopup(lat, lng) {
         .then(data => {
             if (data.success) {
                 marker.setPopupContent(getPopupContent(lat, lng, data.pin.photos)).openPopup();
-                adjustImageSizes(); // Adjust image sizes when the popup content changes
+                adjustImageSizes(); // Ensure image sizes are adjusted
             } else {
                 console.error("Failed to load pin data:", data.message);
             }
         }).catch(error => console.error("Error fetching pin data:", error));
 }
-
 // Function to save pin to the database
 function savePin(lat, lng) {
     fetch('/add_pin', {
@@ -338,3 +344,28 @@ function deletePhotos(lat, lng) {
         }
     }).catch(error => console.error("Error deleting photos:", error));
 }
+
+const style = document.createElement('style');
+style.innerHTML = `
+    .leaflet-popup-content-wrapper {
+        border: none !important;
+        padding: 0 !important;
+        background: none !important;
+    }
+
+    .leaflet-popup-tip-container {
+        display: none !important;
+    }
+
+    .leaflet-popup-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: none !important;
+    }
+
+    .popup-content {
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+`;
+document.head.appendChild(style);
