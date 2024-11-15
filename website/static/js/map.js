@@ -58,13 +58,21 @@ function createMarker(lat, lng) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                marker.bindPopup(getPopupContent(lat, lng, data.pin.photos)).openPopup();
+                // Delete pin if it does not have any photos
+                if (data.pin.photos.length === 0) {
+                    deleteMarker(lat, lng);
+                } else {
+                    marker.bindPopup(getPopupContent(lat, lng, data.pin.photos)).openPopup();
+                }
             } else {
                 marker.bindPopup(getPopupContent(lat, lng)).openPopup();
             }
-        }).catch(error => console.error("Error fetching photos for pin:", error));
+        }).catch(error => {
+            console.error("Error fetching photos for pin:", error);
+        });
 
     savePin(lat, lng);
+
     return marker;
 }
 
@@ -89,22 +97,64 @@ function createMarkersOnLoad(lat, lng) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                marker.bindPopup(getPopupContent(lat, lng, data.pin.photos)).openPopup();
+                if (data.pin.photos.length === 0) {
+                    // Delete pin if it does not have any photos
+                    deleteMarker(lat, lng);
+                } else {
+                    marker.bindPopup(getPopupContent(lat, lng, data.pin.photos)).openPopup();
+                }
             } else {
                 marker.bindPopup(getPopupContent(lat, lng)).openPopup();
             }
-        }).catch(error => console.error("Error fetching photos for pin:", error));
+        }).catch(error => {
+            console.error("Error fetching photos for pin:", error);
+        });
 }
+
 
 // Function to get popup content
 function getPopupContent(lat, lng, photos = []) {
-    let photoGallery = photos.map(url => `<img src="${url.substring(8)}" width="100" height="100" style="margin: 5px;">`).join('');
-    return `<b>Marker at ${lat.toFixed(5)}, ${lng.toFixed(5)}</b><br>
-            ${photoGallery}<br>
-            <button onclick="deleteMarker(${lat}, ${lng})">Delete Marker</button><br>
-            <button onclick="triggerFileInput(${lat}, ${lng})">Upload Photo</button>
-            <input type="file" id="fileInput" style="display: none;" accept="image/*">`;
+    let photoGallery = photos.map(url =>
+        `<img src="${url.substring(8)}" width="200" height="200" 
+              style="margin: 5px; object-fit: contain;">`)
+        .join('');
+
+    // Conditional rendering of the "Upload" button
+    const uploadButton = photos.length > 0 ? '' : `<button onclick="triggerFileInput(${lat}, ${lng})" style="font-size: 0.75em; padding: 3px 5px;">Upload</button>`;
+
+    return `<div class="popup-content" style="width: 220px; padding: 1px; box-sizing: border-box; border: 0px solid black;">
+                <div>${photoGallery}</div>
+                <div style="display: flex; gap: 5px; margin-top: 5px; justify-content: center;">
+                    <button onclick="deleteMarker(${lat}, ${lng})" style="font-size: 0.75em; padding: 3px 5px;">Delete</button>
+                    ${uploadButton}
+                </div>
+                <input type="file" id="fileInput" style="display: none;" accept="image/*">
+            </div>`;
 }
+
+// Function to initialize or show the popup with the content
+function showPopup(lat, lng, photos = []) {
+    const popupContent = getPopupContent(lat, lng, photos);
+    // Example of creating and showing the popup
+    const popupElement = document.createElement('div');
+    popupElement.innerHTML = popupContent;
+    document.body.appendChild(popupElement); // This should be adapted based on how you add the popup
+
+    if (photos.length > 0) {
+        // Condition to ensure it always shows if there are photos
+        popupElement.classList.add('always-visible');
+    } else {
+        popupElement.classList.remove('always-visible');
+    }
+
+    // Logic to show the popup, this is a simple example
+    popupElement.style.position = 'absolute'; // Position it based on lat/lng for example
+    popupElement.style.top = `${lat}px`; // Example position
+    popupElement.style.left = `${lng}px`; // Example position
+}
+
+// Example usage to show the popup
+// showPopup(lat, lng, photos);
 
 // Function to handle photo upload
 function uploadFile() {
@@ -203,10 +253,11 @@ function deletePhotos(lat, lng) {
     }).then(response => response.json())
       .then(data => {
           if (data.success) {
-              alert("Photos deleted successfully!");
+              // Silently delete photos without alerting the user
+              console.log("Photos deleted successfully");
               updateMarkerPopup(parseFloat(lat), parseFloat(lng));  // Refresh the marker popup to reflect photo deletion
           } else {
-              alert("Failed to delete photos: " + data.message);
+              console.error("Failed to delete photos: " + data.message);
           }
       }).catch(error => console.error("Error deleting photos:", error));
 }
@@ -222,6 +273,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(response => response.json())
     .then(pins => {
         pins.forEach(pin => createMarkersOnLoad(parseFloat(pin.lat), parseFloat(pin.lng)));
-    }).catch(error => console.error('Error loading pins:', error));
+    }).catch(error => {
+        console.error('Error loading pins:', error);
+    });
 });
 

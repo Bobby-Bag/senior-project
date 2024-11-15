@@ -1,69 +1,68 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>{{ user.first_name }}'s Photo Map</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-        <style>
-            body {
-                background-color: #f8f9fa;
-            }
-            #map {
-                height: 500px;
-                width: 100%;
-            }
-            .container {
-                margin-top: 50px;
-            }
-            h1 {
-                margin-bottom: 30px;
-            }
-            .back-button {
-                margin-top: 20px;
-            }
-        </style>
-        <script src="../static/js/map.js"></script>
-    </head>
-    <body>
-        <div class="container">
-            <h1 class="text-center">{{ user.first_name }}'s Photo Map</h1>
-            <div id="map" class="mb-4"></div>
-            <div class="text-center back-button">
-                <a href="{{ url_for('auth.display_users') }}" class="btn btn-primary">Back to Users List</a>
-            </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.first_name }}'s Photo Map</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        h1 {
+            margin-bottom: 30px;
+        }
+        .back-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">{{ user.first_name }}'s Photo Map</h1>
+        <div id="map" class="mb-4"></div>
+        <div class="text-center back-button">
+            <a href="{{ url_for('auth.display_users') }}" class="btn btn-primary">Back to Users List</a>
         </div>
+    </div>
 
-        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-        <script type="text/javascript">
-            function initMap() {
-                var map = L.map('map').setView([0, 0], 2);
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script type="text/javascript">
+        function initMap() {
+            var map = L.map('map').setView([0, 0], 2);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
 
-                var pins = {{ pins|tojson }};
-                var bounds = L.latLngBounds();
+            var pins = {{ pins|tojson }};
+            var bounds = L.latLngBounds();
 
-                for (var i = 0; i < pins.length; i++) {
-                    var position = [pins[i].lat, pins[i].lng];
-                    var photo = pins[i].photo;
-                    var popupContent = '<img src="' + photo + '" alt="User Photo" style="width:100%;height:auto;">';
+            pins.forEach(pin => {
+                var position = [pin.lat, pin.lng];
+                var photoElements = pin.photos.map(photo => '<img src="' + photo + '" alt="User Photo" style="width:100%;height:auto;">');
+                var popupContent = photoElements.join('');
 
-                    bounds.extend(position);
-                    L.marker(position).addTo(map).bindPopup(popupContent);
-                }
+                bounds.extend(position);
+                L.marker(position).addTo(map).bindPopup(popupContent);
+            });
 
-                if (pins.length > 0) {
-                    map.fitBounds(bounds);
-                }
+            if (pins.length > 0) {
+                map.fitBounds(bounds);
             }
+        }
 
-            window.onload = initMap;
-        </script>
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    </body>
-    </html>
+        window.onload = initMap;
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

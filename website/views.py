@@ -1,5 +1,4 @@
-# Bobby add this (like the whole file) ->
-from flask import Blueprint, render_template, request, flash, jsonify
+from flask import Blueprint, render_template, request, flash, jsonify, url_for
 from flask_cors import CORS
 from flask_login import login_required, current_user
 from .models import Pin, Photo, User
@@ -9,7 +8,9 @@ from flask import send_from_directory
 from werkzeug.utils import secure_filename, redirect
 from datetime import datetime
 import json
-from flask import send_from_directory
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 views = Blueprint('views', __name__)
 UPLOAD_FOLDER = "/website/uploads"
@@ -17,25 +18,26 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the root upload folder exists
 
+
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
-
     return render_template("home.html", user=current_user)
-
 
 
 @views.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
-# Route to get all pins for the logged-in user
+
 @views.route('/get_pins', methods=['GET'])
 @login_required
 def get_pins():
+    logging.debug('Fetching pins for user: %s', current_user.id)
     user_id = current_user.id
     pins = Pin.query.filter_by(user_id=user_id).all()
     pins_data = [{'lat': pin.latitude, 'lng': pin.longitude} for pin in pins]
+    logging.debug('Pins data: %s', pins_data)
     return jsonify(pins_data)
 
 
@@ -50,7 +52,7 @@ def add_pin():
     if lat is None or lng is None:
         return jsonify({'error': 'Invalid latitude or longitude'}), 400
 
-        # Round the latitude and longitude to 5 decimal places
+    # Round the latitude and longitude to 5 decimal places
     lat = round(lat, 5)
     lng = round(lng, 5)
 
@@ -91,6 +93,7 @@ def delete_pin():
     else:
         return jsonify({'error': 'Pin not found'}), 404
 
+
 @views.route('/get_pin', methods=['GET'])
 @login_required
 def get_pin():
@@ -116,6 +119,15 @@ def get_pin():
     # Retrieve all photos associated with the pin
     photos = Photo.query.filter_by(pin_id=pin.id).all()
     photo_urls = [photo.photo_url for photo in photos]
+
+    # Delete the pin if there are no photos
+    if not photo_urls:
+        db.session.delete(pin)
+        db.session.commit()
+        return jsonify({
+            'success': False,
+            'message': 'Pin had no photos and was deleted.'
+        }), 200
 
     # Return pin data along with photo URLs
     return jsonify({
@@ -178,7 +190,6 @@ def upload_photo():
     }), 200
 
 
-
 def get_pin():
     # Retrieve latitude and longitude from query parameters
     lat = request.args.get('lat')
@@ -213,6 +224,7 @@ def get_pin():
         }
     }), 200
 
+
 @views.route('/delete_photos', methods=['GET'])
 @login_required
 def delete_photos():
@@ -237,12 +249,19 @@ def delete_photos():
 
     # Retrieve all photos associated with the pin
     photos = Photo.query.filter_by(pin_id=pin.id).all()
-    #photo_urls = [photo.photo_url for photo in photos]
-    if photos != '':
+    if photos:
         for photo in photos:
             db.session.delete(photo)
         db.session.commit()
-        return jsonify({'message': 'Photo deleted successfully'})
+
+        # Delete the pin if it has no photos left
+        empty_pin = Photo.query.filter_by(pin_id=pin.id).count() == 0
+        if empty_pin:
+            db.session.delete(pin)
+            db.session.commit()
+            return jsonify({'message': 'Photos and empty pin deleted successfully'}), 200
+
+        return jsonify({'message': 'Photos deleted successfully'}), 200
 
     return jsonify({'error': 'Photos not found'}), 404
 
@@ -254,11 +273,14 @@ def display_users():
     return render_template("users.html", users=users)  # Pass users to the template
 
 
-
 # New route to show user's pins and associated photos on a map
 @views.route('/user/<int:user_id>/pins')
 @login_required
 def user_pins(user_id):
+    if user_id == current_user.id:
+        flash('You cannot view your own pins here.', category='error')
+        return redirect(url_for('views.home'))
+
     user = User.query.get(user_id)
     if not user:
         flash('User not found', category='error')
@@ -273,7 +295,3 @@ def user_pins(user_id):
         pin_locations.append(pin_data)
 
     return render_template('user_pins.html', user=user, pins=pin_locations)
-
-
-
-
