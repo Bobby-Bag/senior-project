@@ -2,6 +2,7 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+import os
 from os import path
 from flask_login import LoginManager
 
@@ -37,6 +38,9 @@ def create_app():
     def load_user(id):
         return User.query.get(int(id))
 
+    # Set the upload folder path
+    app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
+    UPLOAD_FOLDER = app.config['UPLOAD_FOLDER']
     return app
 
 
