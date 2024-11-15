@@ -149,5 +149,3 @@ def update_notifications():
     db.session.commit()
     flash('Notification settings updated!', category='success')
     return redirect(url_for('auth.account'))
-
-

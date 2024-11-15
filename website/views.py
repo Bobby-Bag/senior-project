@@ -1,3 +1,4 @@
+import sqlalchemy
 from flask import Blueprint, render_template, request, flash, jsonify, url_for
 from flask_cors import CORS
 from flask_login import login_required, current_user
@@ -228,7 +229,6 @@ def get_pin():
 @views.route('/delete_photos', methods=['GET'])
 @login_required
 def delete_photos():
-    # Retrieve latitude and longitude from query parameters
     lat = request.args.get('lat')
     lng = request.args.get('lng')
 
@@ -236,35 +236,47 @@ def delete_photos():
         return jsonify({'success': False, 'message': 'Latitude and longitude are required'}), 400
 
     try:
-        # Convert to float with rounding to match precision
         lat = round(float(lat), 5)
         lng = round(float(lng), 5)
     except ValueError:
         return jsonify({'success': False, 'message': 'Invalid latitude or longitude format'}), 400
 
-    # Query for the pin with the provided latitude and longitude
     pin = Pin.query.filter_by(user_id=current_user.id, latitude=lat, longitude=lng).first()
     if not pin:
         return jsonify({'success': False, 'message': 'Pin not found'}), 404
 
-    # Retrieve all photos associated with the pin
-    photos = Photo.query.filter_by(pin_id=pin.id).all()
-    if photos:
-        for photo in photos:
-            db.session.delete(photo)
-        db.session.commit()
+    try:
+        # Start a transaction
+        with db.session.begin_nested():
+            # Retrieve all photos associated with the pin
+            photos = Photo.query.filter_by(pin_id=pin.id).all()
 
-        # Delete the pin if it has no photos left
-        empty_pin = Photo.query.filter_by(pin_id=pin.id).count() == 0
-        if empty_pin:
-            db.session.delete(pin)
+            # Delete the photos
+            if photos:
+                for photo in photos:
+                    db.session.delete(photo)
+
+            # Commit photo deletions
             db.session.commit()
-            return jsonify({'message': 'Photos and empty pin deleted successfully'}), 200
 
-        return jsonify({'message': 'Photos deleted successfully'}), 200
+            # Check if the pin is empty and delete it if it has no photos left
+            empty_pin = Photo.query.filter_by(pin_id=pin.id).count() == 0
+            if empty_pin:
+                db.session.delete(pin)
+                db.session.commit()
+                return jsonify({'message': 'Photos and empty pin deleted successfully'}), 200
+
+            return jsonify({'message': 'Photos deleted successfully'}), 200
+
+    except sqlalchemy.orm.exc.ObjectDeletedError:
+        db.session.rollback()
+        return jsonify({'error': 'Instance has been deleted or is not present'}), 500
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
     return jsonify({'error': 'Photos not found'}), 404
-
 
 # Updated display_users route to fetch user's first_name and id
 @views.route('/users')

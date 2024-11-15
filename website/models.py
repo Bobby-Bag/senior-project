@@ -14,7 +14,6 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(150))
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     last_login = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
     # Relationship to connect User to Pins
     pins = db.relationship('Pin', backref='user', lazy=True)
     # Relationship to connect User to Administrator (1:1)

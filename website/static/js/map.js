@@ -4,7 +4,8 @@ var map = L.map('map', {
     zoom: 6, // Initial zoom level
     minZoom: 3,
     maxBounds: [[-95, -185], [95, 185]], // Map boundaries
-    maxBoundsViscosity: 0.9 // Restrict map movement within bounds
+    maxBoundsViscosity: 0.9, // Restrict map movement within bounds
+    doubleClickZoom: false // Disable zoom on double click
 });
 
 // Add tile layers
@@ -37,11 +38,11 @@ L.Control.geocoder({
     placeholder: "Search for a location...",
     defaultMarkGeocode: false
 })
-.on('markgeocode', function(e) {
+.on('markgeocode', function (e) {
     var bbox = e.geocode.bbox;
     map.flyToBounds(bbox, { animate: true, duration: 2 });
 })
-.addTo(map);
+    .addTo(map);
 
 // Global dictionary to store markers
 const markers = {};
@@ -62,10 +63,10 @@ function createMarker(lat, lng) {
                 if (data.pin.photos.length === 0) {
                     deleteMarker(lat, lng);
                 } else {
-                    marker.bindPopup(getPopupContent(lat, lng, data.pin.photos)).openPopup();
+                    marker.bindPopup(getPopupContent(lat, lng, data.pin.photos), { autoClose: false }).openPopup();
                 }
             } else {
-                marker.bindPopup(getPopupContent(lat, lng)).openPopup();
+                marker.bindPopup(getPopupContent(lat, lng), { autoClose: false }).openPopup();
             }
         }).catch(error => {
             console.error("Error fetching photos for pin:", error);
@@ -76,16 +77,7 @@ function createMarker(lat, lng) {
     return marker;
 }
 
-// Function to trigger file input for uploading photo
-function triggerFileInput(lat, lng) {
-    const fileInput = document.getElementById('fileInput');
-    fileInput.dataset.lat = lat;
-    fileInput.dataset.lng = lng;
-    fileInput.onchange = uploadFile;
-    fileInput.click();
-}
-
-// Function to create marker upon loading
+// Function to create markers on initial load
 function createMarkersOnLoad(lat, lng) {
     const roundedLat = lat.toFixed(5);
     const roundedLng = lng.toFixed(5);
@@ -101,23 +93,21 @@ function createMarkersOnLoad(lat, lng) {
                     // Delete pin if it does not have any photos
                     deleteMarker(lat, lng);
                 } else {
-                    marker.bindPopup(getPopupContent(lat, lng, data.pin.photos)).openPopup();
+                    marker.bindPopup(getPopupContent(lat, lng, data.pin.photos), { autoClose: false }).openPopup();
                 }
             } else {
-                marker.bindPopup(getPopupContent(lat, lng)).openPopup();
+                marker.bindPopup(getPopupContent(lat, lng), { autoClose: false }).openPopup();
             }
         }).catch(error => {
             console.error("Error fetching photos for pin:", error);
         });
 }
 
-
 // Function to get popup content
 function getPopupContent(lat, lng, photos = []) {
     let photoGallery = photos.map(url =>
         `<img src="${url.substring(8)}" width="200" height="200" 
-              style="margin: 5px; object-fit: contain;">`)
-        .join('');
+              style="margin: 5px; object-fit: contain;">`).join('');
 
     // Conditional rendering of the "Upload" button
     const uploadButton = photos.length > 0 ? '' : `<button onclick="triggerFileInput(${lat}, ${lng})" style="font-size: 0.75em; padding: 3px 5px;">Upload</button>`;
@@ -153,6 +143,15 @@ function showPopup(lat, lng, photos = []) {
     popupElement.style.left = `${lng}px`; // Example position
 }
 
+// Function to trigger file input for uploading photo
+function triggerFileInput(lat, lng) {
+    const fileInput = document.getElementById('fileInput');
+    fileInput.dataset.lat = lat;
+    fileInput.dataset.lng = lng;
+    fileInput.onchange = uploadFile;
+    fileInput.click();
+}
+
 // Example usage to show the popup
 // showPopup(lat, lng, photos);
 
@@ -177,14 +176,14 @@ function uploadFile() {
         method: 'POST',
         body: formData
     }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              alert("Photo uploaded successfully!");
-              updateMarkerPopup(lat, lng); // Update the marker's popup with new photos
-          } else {
-              alert("Failed to upload photo: " + data.message);
-          }
-      }).catch(error => console.error("Error in upload request:", error));
+        .then(data => {
+            if (data.success) {
+                alert("Photo uploaded successfully!");
+                updateMarkerPopup(lat, lng); // Update the marker's popup with new photos
+            } else {
+                alert("Failed to upload photo: " + data.message);
+            }
+        }).catch(error => console.error("Error in upload request:", error));
 }
 
 // Function to update marker popup content
@@ -216,8 +215,8 @@ function savePin(lat, lng) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lat, lng })
     }).then(response => response.json())
-      .then(data => console.log(data.message))
-      .catch(error => console.error('Error adding pin:', error));
+        .then(data => console.log(data.message))
+        .catch(error => console.error('Error adding pin:', error));
 }
 
 // Function to delete a marker and its associated photos
@@ -232,16 +231,16 @@ function deleteMarker(lat, lng) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lat, lng })
     }).then(response => response.json())
-      .then(data => {
-          if (data.message) {
-              map.eachLayer(layer => {
-                  if (layer instanceof L.Marker && layer.getLatLng().equals([lat, lng])) {
-                      map.removeLayer(layer);
-                  }
-              });
-              console.log(data.message);
-          }
-      }).catch(error => console.error('Error deleting pin:', error));
+        .then(data => {
+            if (data.message) {
+                map.eachLayer(layer => {
+                    if (layer instanceof L.Marker && layer.getLatLng().equals([lat, lng])) {
+                        map.removeLayer(layer);
+                    }
+                });
+                console.log(data.message);
+            }
+        }).catch(error => console.error('Error deleting pin:', error));
 }
 
 // Function to delete photos
@@ -251,30 +250,64 @@ function deletePhotos(lat, lng) {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
     }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              // Silently delete photos without alerting the user
-              console.log("Photos deleted successfully");
-              updateMarkerPopup(parseFloat(lat), parseFloat(lng));  // Refresh the marker popup to reflect photo deletion
-          } else {
-              console.error("Failed to delete photos: " + data.message);
-          }
-      }).catch(error => console.error("Error deleting photos:", error));
+        .then(data => {
+            if (data.success) {
+                // Silently delete photos without alerting the user
+                console.log("Photos deleted successfully");
+                updateMarkerPopup(parseFloat(lat), parseFloat(lng));  // Refresh the marker popup to reflect photo deletion
+            } else {
+                console.error("Failed to delete photos: " + data.message);
+            }
+        }).catch(error => console.error("Error deleting photos:", error));
 }
 
 // Event listener to create a marker on map click
-map.on('click', function(e) {
+map.on('dblclick', function (e) {
     createMarker(e.latlng.lat, e.latlng.lng);
 });
 
-// Load existing pins when the map is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     fetch('/get_pins')
-    .then(response => response.json())
-    .then(pins => {
-        pins.forEach(pin => createMarkersOnLoad(parseFloat(pin.lat), parseFloat(pin.lng)));
-    }).catch(error => {
-        console.error('Error loading pins:', error);
-    });
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(pins => {
+            pins.forEach(pin => {
+                const lat = parseFloat(pin.lat); // Convert latitude to float
+                const lng = parseFloat(pin.lng); // Convert longitude to float
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    createMarkersOnLoad(lat, lng); // Create and add marker on map
+                } else {
+                    console.error('Invalid pin data:', pin); // Log invalid pin data
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading pins:', error); // Catch and log any fetch errors
+        });
 });
 
+
+// Enhanced error logging example for deleting photos
+function deletePhotos(lat, lng) {
+    fetch(`/delete_photos?lat=${lat}&lng=${lng}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    }).then(data => {
+        if (data.success) {
+            console.log("Photos deleted successfully");
+            updateMarkerPopup(parseFloat(lat), parseFloat(lng));
+        } else {
+            console.error("Failed to delete photos: " + data.message);
+        }
+    }).catch(error => console.error("Error deleting photos:", error));
+}
