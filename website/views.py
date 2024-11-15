@@ -2,13 +2,14 @@
 from flask import Blueprint, render_template, request, flash, jsonify
 from flask_cors import CORS
 from flask_login import login_required, current_user
-from .models import Pin, Photo
+from .models import Pin, Photo, User
 from . import db
 import os
 from flask import send_from_directory
-from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename, redirect
 from datetime import datetime
 import json
+from flask import send_from_directory
 
 views = Blueprint('views', __name__)
 UPLOAD_FOLDER = "/website/uploads"
@@ -244,3 +245,35 @@ def delete_photos():
         return jsonify({'message': 'Photo deleted successfully'})
 
     return jsonify({'error': 'Photos not found'}), 404
+
+
+# Updated display_users route to fetch user's first_name and id
+@views.route('/users')
+def display_users():
+    users = User.query.with_entities(User.first_name, User.id).all()  # Fetch all users' first name and id
+    return render_template("users.html", users=users)  # Pass users to the template
+
+
+
+# New route to show user's pins and associated photos on a map
+@views.route('/user/<int:user_id>/pins')
+@login_required
+def user_pins(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        flash('User not found', category='error')
+        return redirect(url_for('views.home'))
+
+    pins = Pin.query.filter_by(user_id=user_id).all()
+    pin_locations = []
+    for pin in pins:
+        photos = Photo.query.filter_by(pin_id=pin.id).all()
+        photo_urls = [photo.photo_url for photo in photos]
+        pin_data = {'lat': pin.latitude, 'lng': pin.longitude, 'photos': photo_urls}
+        pin_locations.append(pin_data)
+
+    return render_template('user_pins.html', user=user, pins=pin_locations)
+
+
+
+

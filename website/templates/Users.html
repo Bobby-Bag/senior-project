@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Users</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        h1 {
+            margin-bottom: 30px;
+        }
+        .list-group-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .list-group-item a {
+            color: inherit;
+            text-decoration: none;
+            flex-grow: 1;
+        }
+        .list-group-item a:hover {
+            text-decoration: underline;
+        }
+        .badge {
+            margin-left: 15px;
+        }
+        .back-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Explore Other Photo Mappers</h1>
+        <ul class="list-group">
+            {% for user in users %}
+                <li class="list-group-item">
+                    <a href="{{ url_for('views.user_pins', user_id=user.id) }}">{{ user.first_name }}</a>
+                    <span class="badge badge-primary badge-pill">ID: {{ user.id }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="text-center back-button">
+            <a href="{{ url_for('views.home') }}" class="btn btn-primary">Back to Home</a>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

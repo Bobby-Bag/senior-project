@@ -65,3 +65,17 @@ def sign_up():
             return redirect(url_for('views.home'))
 
     return render_template("sign_up.html", user=current_user)
+
+@auth.route('/Users')
+def display_users():
+    users = User.query.with_entities(User.first_name, User.id).all()  # Fetch all users' first name and id
+    return render_template("users.html", users=users)  # Pass users to the template
+
+
+@auth.route('/User/<int:user_id>')
+def view_user(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        flash('User not found', category='error')
+        return redirect(url_for('auth.display_users'))
+    return render_template("view_user.html", user=user)
