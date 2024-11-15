@@ -64,9 +64,11 @@ function createMarker(lat, lng) {
                     deleteMarker(lat, lng);
                 } else {
                     marker.bindPopup(getPopupContent(lat, lng, data.pin.photos), { autoClose: false }).openPopup();
+                    adjustImageSizes(); // Adjust image sizes when the popup opens
                 }
             } else {
                 marker.bindPopup(getPopupContent(lat, lng), { autoClose: false }).openPopup();
+                adjustImageSizes(); // Adjust image sizes when the popup opens
             }
         }).catch(error => {
             console.error("Error fetching photos for pin:", error);
@@ -94,9 +96,11 @@ function createMarkersOnLoad(lat, lng) {
                     deleteMarker(lat, lng);
                 } else {
                     marker.bindPopup(getPopupContent(lat, lng, data.pin.photos), { autoClose: false }).openPopup();
+                    adjustImageSizes(); // Adjust image sizes when the popup opens
                 }
             } else {
                 marker.bindPopup(getPopupContent(lat, lng), { autoClose: false }).openPopup();
+                adjustImageSizes(); // Adjust image sizes when the popup opens
             }
         }).catch(error => {
             console.error("Error fetching photos for pin:", error);
@@ -106,20 +110,39 @@ function createMarkersOnLoad(lat, lng) {
 // Function to get popup content
 function getPopupContent(lat, lng, photos = []) {
     let photoGallery = photos.map(url =>
-        `<img src="${url.substring(8)}" width="200" height="200" 
-              style="margin: 5px; object-fit: contain;">`).join('');
+        `<img class="map-photo" src="${url.substring(8)}" 
+              style="margin: 5px; object-fit: contain; transition: width 0.2s, height 0.2s;">`).join('');
 
     // Conditional rendering of the "Upload" button
     const uploadButton = photos.length > 0 ? '' : `<button onclick="triggerFileInput(${lat}, ${lng})" style="font-size: 0.75em; padding: 3px 5px;">Upload</button>`;
 
-    return `<div class="popup-content" style="width: 220px; padding: 1px; box-sizing: border-box; border: 0px solid black;">
-                <div>${photoGallery}</div>
+    return `<div class="popup-content" style="width: 220px; padding: 5px; box-sizing: border-box; border: 0px solid black;">
+                <div style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">
+                    ${photoGallery}
+                </div>
                 <div style="display: flex; gap: 5px; margin-top: 5px; justify-content: center;">
                     <button onclick="deleteMarker(${lat}, ${lng})" style="font-size: 0.75em; padding: 3px 5px;">Delete</button>
                     ${uploadButton}
                 </div>
                 <input type="file" id="fileInput" style="display: none;" accept="image/*">
             </div>`;
+}
+// Function to adjust image sizes based on the zoom level
+function adjustImageSizes() {
+    const zoom = map.getZoom();
+    const images = document.querySelectorAll('.map-photo');
+
+    // Adjust the size based on zoom level with a controlled range
+    const minSize = 50;  // Minimum size for the images
+    const maxSize = 100; // Maximum size for the images
+
+    // Adjust the size based on zoom level. Modify this to change initial/maximum/minimum sizes
+    const size = Math.max(30, Math.min(100, zoom * 10));
+
+    images.forEach(img => {
+        img.style.width = `${size}px`;
+        img.style.height = `${size}px`;
+    });
 }
 
 // Function to initialize or show the popup with the content
@@ -151,9 +174,6 @@ function triggerFileInput(lat, lng) {
     fileInput.onchange = uploadFile;
     fileInput.click();
 }
-
-// Example usage to show the popup
-// showPopup(lat, lng, photos);
 
 // Function to handle photo upload
 function uploadFile() {
@@ -202,6 +222,7 @@ function updateMarkerPopup(lat, lng) {
         .then(data => {
             if (data.success) {
                 marker.setPopupContent(getPopupContent(lat, lng, data.pin.photos)).openPopup();
+                adjustImageSizes(); // Adjust image sizes when the popup content changes
             } else {
                 console.error("Failed to load pin data:", data.message);
             }
@@ -289,6 +310,12 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error loading pins:', error); // Catch and log any fetch errors
         });
 });
+
+// Adjust image sizes initially to set a reasonable starting size
+adjustImageSizes();
+
+// Add zoom event listener to adjust image sizes smoothly
+map.on('zoom', adjustImageSizes);
 
 
 // Enhanced error logging example for deleting photos

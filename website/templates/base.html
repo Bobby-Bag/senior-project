@@ -62,6 +62,23 @@ body {
 .nav-item {
     margin-right: 30px;
 }
+.popup-content img.map-photo {
+    cursor: pointer; /* Changes cursor to indicate interactivity */
+    transition: width 0.2s ease, height 0.2s ease; /* Smooth resizing */
+}
+
+.popup-content img.map-photo:active {
+    transform: none; /* Prevent image from scaling */
+}
+
+.popup-content {
+    max-width: 220px; /* Ensure popup width is consistent */
+    padding: 5px; /* Uniform padding */
+    box-sizing: border-box;
+    border: none; /* Subtle border */
+    border-radius: 5px; /* Rounded corners */
+    background-color: white; /* White background for popup */
+}
 
     </style>
 
