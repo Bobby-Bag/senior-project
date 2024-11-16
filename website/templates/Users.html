@@ -6,12 +6,26 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: Roboto, sans-serif;
+            color: black;
+            margin: 0;
+            padding: 0;
         }
         .container {
-            margin-top: 50px;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
         h1 {
+            color: black;
             margin-bottom: 30px;
         }
         .list-group-item {
@@ -35,9 +49,31 @@
         .back-button {
             margin-top: 20px;
         }
+        .nav-item {
+            margin-right: 30px;
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbar"
+        >
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+
+            <div class="navbar-nav">
+                    <a class="nav-item nav-link" id="home" href="/">Home</a>
+                    <a class="nav-item nav-link" id="account" href="/account">Account</a>
+                    <a class="nav-item nav-link" id="settings" href="/Users">Explore</a>
+                    <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+            </div>
+        </div>
+    </nav>
     <div class="container">
         <h1 class="text-center">Explore Other Photo Mappers</h1>
         <ul class="list-group">
