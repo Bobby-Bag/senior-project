@@ -285,7 +285,20 @@ def display_users():
     return render_template("users.html", users=users)  # Pass users to the template
 
 
-# New route to show user's pins and associated photos on a map
+# Define a constant for the uploads directory
+UPLOADS_DIRECTORY = '/uploads'
+
+
+def construct_photo_url(photo_url):
+    # Normalize photo URL to ensure it starts with UPLOADS_DIRECTORY
+    if photo_url.startswith(UPLOADS_DIRECTORY):
+        return photo_url
+    elif photo_url.startswith('/website/uploads'):
+        return photo_url.replace('/website/uploads', UPLOADS_DIRECTORY)
+    else:
+        return f'{UPLOADS_DIRECTORY}/{photo_url}'
+
+
 @views.route('/user/<int:user_id>/pins')
 @login_required
 def user_pins(user_id):
@@ -302,7 +315,8 @@ def user_pins(user_id):
     pin_locations = []
     for pin in pins:
         photos = Photo.query.filter_by(pin_id=pin.id).all()
-        photo_urls = [photo.photo_url for photo in photos]
+        # Normalize photo URLs
+        photo_urls = [construct_photo_url(photo.photo_url) for photo in photos]
         pin_data = {'lat': pin.latitude, 'lng': pin.longitude, 'photos': photo_urls}
         pin_locations.append(pin_data)
 

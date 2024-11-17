@@ -20,12 +20,13 @@
             max-width: 600px;
             margin: 50px auto;
             padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.90);
+            background-color: rgba(0, 0, 0, 0.7); /* Black background with 0.7 opacity */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
+            color: white; /* Change text color to white for readability */
         }
         h1 {
-            color: black;
+            color: white; /* Change to white to make it stand out on the dark background */
             margin-bottom: 30px;
         }
         .list-group-item {
@@ -34,9 +35,11 @@
             align-items: center;
             font-size: 1.2rem;
             text-align: center;
+            background: none; /* Ensure list items are transparent */
+            color: white; /* Change text color to white for readability */
         }
         .list-group-item a {
-            color: inherit;
+            color: white; /* Change link color to white */
             text-decoration: none;
             flex-grow: 1;
         }
@@ -52,58 +55,25 @@
         .nav-item {
             margin-right: 30px;
         }
-
-        .navbar-brand img {
-            height: 40px;
-            width: auto;
-        }
-
-        .nav-link img {
-            height: 30px;
-        }
-
-        .nav-item #explore img {
-            height: 30px;
-        }
-
-        .navbar {
-            background: linear-gradient(to right, #354C9A, #354C9A);
-            border: none;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, .90);
-        }
-
-        .navbar-collapse {
-            display: flex;
-            justify-content: space-between; /* Distribute space between items */
-        }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbar"
+        >
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbar">
+
             <div class="navbar-nav">
-                <a class="nav-item nav-link" id="home" href="/">
-                    <img src="/static/Icons/home.png" alt="Home">
-                </a>
-                <a class="nav-item nav-link" id="settings" href="/Users">
-                    <img src="/static/Icons/locate-512-white.png" alt="Explore">
-                </a>
-            </div>
-            <div class="navbar-nav ml-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img src="/static/Icons/img.png" alt="Menu Icon">
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" id="account" href="/account">Account</a>
-                        <a class="dropdown-item" id="logout" href="/logout">
-                            <span class="logout-emblem"></span>Logout
-                        </a>
-                    </div>
-                </li>
+                    <a class="nav-item nav-link" id="home" href="/">Home</a>
+                    <a class="nav-item nav-link" id="account" href="/account">Account</a>
+                    <a class="nav-item nav-link" id="settings" href="/Users">Explore</a>
+                    <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
             </div>
         </div>
     </nav>
