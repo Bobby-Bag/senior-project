@@ -1,87 +1,137 @@
 {% extends "base.html" %}
 
-    {% block title %}
-        {{ user.first_name }}'s Account
-    {% endblock %}
+{% block title %}
+    {{ user.first_name }}'s Account
+{% endblock %}
 
-    {% block head %}
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-        <style>
-            body {
-                background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                background-attachment: fixed;
-                font-family: Roboto, sans-serif;
-                color: black;
-                margin: 0;
-                padding: 0;
-            }
-            .container {
-                max-width: 600px;
-                margin: 50px auto;
-                padding: 20px;
-                background-color: #fff;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                border-radius: 8px;
-            }
-            h1 {
-                text-align: center;
-                margin-bottom: 30px;
-                color: #333;
-            }
-            label {
-                display: block;
-                margin: 10px 0 5px;
-                color: #555;
-            }
-            input {
-                width: 100%;
-                padding: 10px;
-                margin-bottom: 10px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-            }
-            button {
-                width: 100%;
-                padding: 10px;
-                background-color: #007bff;
-                color: #fff;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 16px;
-            }
-            button:hover {
-                background-color: #0056b3;
-            }
-            .link-container {
-                text-align: center;
-                margin-top: 20px;
-            }
-            .link-container a {
-                color: #007bff;
-                text-decoration: none;
-            }
-            .link-container a:hover {
-                text-decoration: underline;
-            }
-            .divider {
-                margin: 20px 0;
-                border-bottom: 1px solid #ccc;
-            }
-            .footer {
-                text-align: center;
-                margin-top: 20px;
-            }
-            .nav-item {
+{% block head %}
+    {{ super() }} <!-- This will retain the base head content -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: Roboto, sans-serif;
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-top: 80px; /* Added margin-top to create space below the navbar */
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #007bff;
+        }
+        .link-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .link-container a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .link-container a:hover {
+            text-decoration: underline;
+        }
+        .divider {
+            margin: 20px 0;
+            border-bottom: 1px solid #ccc;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .nav-item {
             margin-right: 30px;
-            }
-        </style>
-    {% endblock %}
+        }
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+        }
+        .nav-link img {
+            height: 30px;
+        }
+        .nav-item #explore img {
+            height: 30px;
+        }
+        .navbar {
+            background: linear-gradient(to right, #354C9A, #354C9A);
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, .90);
+        }
+        .navbar-collapse {
+            display: flex;
+            justify-content: space-between; /* Distribute space between items */
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" id="home" href="/">
+                    <img src="/static/Icons/home.png" alt="Home">
+                </a>
+                <a class="nav-item nav-link" id="settings" href="/Users">
+                    <img src="/static/Icons/locate-512-white.png" alt="Explore">
+                </a>
+            </div>
+            <div class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img src="/static/Icons/img.png" alt="Menu Icon">
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" id="account" href="/account">Account</a>
+                        <a class="dropdown-item" id="logout" href="/logout">
+                            <span class="logout-emblem"></span>Logout
+                        </a>
+                    </div>
+                </li>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <h1>{{ user.first_name }}'s Account</h1>
         <form method="POST">

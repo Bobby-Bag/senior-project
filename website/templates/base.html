@@ -3,147 +3,165 @@
 <head>{% block head %}
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link
-        rel="stylesheet"
-        href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        crossorigin="anonymous"
-    />
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"
-    />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"/>
 
     <!-- THOMAS NGUYEN INCLUDED THESE FOR SEARCH BAR Including CSS for Leaflet and Control.Geocoder -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 
     <style>
-
-
         /* THOMAS NGUYEN UPDATED MAP TO FILL OUT THE ENTIRE SCREEN */
-html, body {
-    height: 100%; /* Ensure that the body and html take up the entire viewport */
-    margin: 0; /* Remove default margin */
-}
+        html, body {
+            height: 100%; /* Ensure that the body and html take up the entire viewport */
+            margin: 0; /* Remove default margin */
+        }
 
-body {
-    background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    font-family: Roboto, sans-serif;
-    color: white;
-}
+        body {
+            background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: Roboto, sans-serif;
+            color: white;
+        }
 
-#map {
-    position: fixed; /* Keep the map fixed to the viewport */
-    top: 56px; /* Move the map down by 20px to avoid overlap with the navbar */
-    left: 0;
-    width: 100%;
-    height: calc(100vh - 76px); /* Ensure the map fills the remaining height of the screen, minus the navbar and the added space */
-    z-index: 0; /* Map stays in the background */
-}
+        #map {
+            position: fixed; /* Keep the map fixed to the viewport */
+            top: 56px; /* Move the map down by 20px to avoid overlap with the navbar */
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 76px); /* Ensure the map fills the remaining height of the screen, minus the navbar and the added space */
+            z-index: 0; /* Map stays in the background */
+        }
 
-/* Ensure the content above the map is clickable */
-.container {
-    position: relative;
-    z-index: 1; /* Ensure content is above the map */
-}
+        /* Ensure the content above the map is clickable */
+        .container {
+            position: relative;
+            z-index: 1; /* Ensure content is above the map */
+        }
 
-.navbar {
-    position: fixed; /* Ensure navbar stays at the top of the page */
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 10; /* Ensure the navbar is above the map */
-}
+        .navbar {
+            position: fixed; /* Ensure navbar stays at the top of the page */
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10; /* Ensure the navbar is above the map */
+        }
 
-.nav-item {
-    margin-right: 30px;
-}
-.popup-content img.map-photo {
-    cursor: pointer; /* Changes cursor to indicate interactivity */
-    transition: width 0.2s ease, height 0.2s ease; /* Smooth resizing */
-}
+        .nav-item {
+            margin-right: 30px;
+        }
 
-.popup-content img.map-photo:active {
-    transform: none; /* Prevent image from scaling */
-}
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+        }
 
-.popup-content {
-    max-width: 220px; /* Ensure popup width is consistent */
-    padding: 5px; /* Uniform padding */
-    box-sizing: border-box;
-    border: none; /* Subtle border */
-    border-radius: 5px; /* Rounded corners */
-    background-color: white; /* White background for popup */
-}
+        .nav-link img {
+            height: 30px;
+        }
 
-.map-photo {
-    margin: 5px;
-    object-fit: contain;
-    transition: width 0.2s, height 0.2s;
-    max-width: 150px; /* Increased maximum width */
-    max-height: 150px; /* Increased maximum height */
-}
+        .nav-item #explore img {
+            height: 30px;
+        }
 
-/* Element directly wrapping the popup content */
-.leaflet-popup-content-wrapper {
-    border: none !important;  /* Remove border */
-    padding: 0 !important;    /* Remove padding */
-    background: none !important; /* Remove background */
-    box-shadow: none !important; /* Remove any shadow */
-}
+        .navbar {
+            background: linear-gradient(to right, #354C9A, #354C9A);
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, .90);
+        }
 
-/* Remove the small arrow attached to the popup */
-.leaflet-popup-tip-container {
-    display: none !important; /* Remove arrow */
-}
+        .navbar-collapse {
+            display: flex;
+            justify-content: space-between; /* Distributes space between items */
+        }
 
-/* Direct wrapper around the popup */
-.leaflet-popup-content {
-    margin: 0 !important;     /* Remove margin */
-    padding: 0 !important;    /* Remove padding */
-    background: none !important; /* Remove background */
-    width: auto !important;   /* Adjust width to fit content */
-    height: auto !important;  /* Adjust height to fit content */
-}
+        .navbar-nav.ml-auto {
+            margin-left: auto;
+        }
 
-/* Wrapper around the entire popup, including close button */
-.leaflet-popup {
-    background: transparent !important; /* Ensure transparency */
-    border: none !important;  /* Remove any border */
-    padding: 0 !important;    /* Remove padding */
-    box-shadow: none !important; /* Remove any shadow */
-    width: auto !important;   /* Adjust width to fit content */
-    height: auto !important;  /* Adjust height to fit content */
-}
+        /* Specific custom popup content styles */
+        .popup-content img.map-photo {
+            cursor: pointer; /* Changes cursor to indicate interactivity */
+            transition: width 0.2s ease, height 0.2s ease; /* Smooth resizing */
+        }
 
-/* Custom popup content */
-.popup-content {
-    background: transparent !important; /* Ensure transparency */
-    width: auto; /* Adjust width to fit content */
-    height: auto; /* Adjust height to fit content */
-}
+        .popup-content img.map-photo:active {
+            transform: none; /* Prevent image from scaling */
+        }
 
-/* Hide the close button for Leaflet popups */
-.leaflet-popup-close-button {
-    display: none !important;
-}
+        .popup-content {
+            max-width: 220px; /* Ensure popup width is consistent */
+            padding: 5px; /* Uniform padding */
+            box-sizing: border-box;
+            border: none; /* Subtle border */
+            border-radius: 5px; /* Rounded corners */
+            background-color: white; /* White background for popup */
+        }
 
+        .map-photo {
+            margin: 5px;
+            object-fit: contain;
+            transition: width 0.2s, height 0.2s;
+            max-width: 150px; /* Increased maximum width */
+            max-height: 150px; /* Increased maximum height */
+        }
+
+        /* Element directly wrapping the popup content */
+        .leaflet-popup-content-wrapper {
+            border: none !important;  /* Remove border */
+            padding: 0 !important;    /* Remove padding */
+            background: none !important; /* Remove background */
+            box-shadow: none !important; /* Remove any shadow */
+        }
+
+        /* Remove the small arrow attached to the popup */
+        .leaflet-popup-tip-container {
+            display: none !important; /* Remove arrow */
+        }
+
+        /* Direct wrapper around the popup */
+        .leaflet-popup-content {
+            margin: 0 !important;     /* Remove margin */
+            padding: 0 !important;    /* Remove padding */
+            background: none !important; /* Remove background */
+            width: auto !important;   /* Adjust width to fit content */
+            height: auto !important;  /* Adjust height to fit content */
+        }
+
+        /* Wrapper around the entire popup, including close button */
+        .leaflet-popup {
+            background: transparent !important; /* Ensure transparency */
+            border: none !important;  /* Remove any border */
+            padding: 0 !important;    /* Remove padding */
+            box-shadow: none !important; /* Remove any shadow */
+            width: auto !important;   /* Adjust width to fit content */
+            height: auto !important;  /* Adjust height to fit content */
+        }
+
+        /* Custom popup content */
+        .popup-content {
+            background: transparent !important; /* Ensure transparency */
+            width: auto; /* Adjust width to fit content */
+            height: auto; /* Adjust height to fit content */
+        }
+
+        /* Hide the close button for Leaflet popups */
+        .leaflet-popup-close-button {
+            display: none !important;
+        }
     </style>
-
     <title>{% block title %}Home{% endblock %}</title>
 {% endblock %}</head>
 
-<body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbar"
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbar"
     >
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -151,49 +169,68 @@ body {
 
         <div class="navbar-nav">
             {% if user.is_authenticated %}
-                <a class="nav-item nav-link" id="home" href="/">Home</a>
-                <a class="nav-item nav-link" id="account" href="/account">Account</a>
-                <a class="nav-item nav-link" id="settings" href="/Users">Explore</a>
-                <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+            <a class="nav-item nav-link" id="home" href="/">
+                <img src="/static/Icons/home.png" alt="Home">
+            </a>
+            <a class="nav-item nav-link" id="settings" href="/Users">
+                <img src="/static/Icons/locate-512-white.png" alt="Explore">
+            </a>
             {% else %}
-                <a class="nav-item nav-link" id="login" href="/login">Login</a>
-                <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
+            <a class="nav-item nav-link" id="login" href="/login">Login</a>
+            <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
             {% endif %}
         </div>
+
+        <div class="navbar-nav ml-auto">
+            {% if user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <img src="/static/Icons/img.png" alt="Menu Icon">
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" id="account" href="/account">Account</a>
+                    <a class="dropdown-item" id="logout" href="/logout">
+                        <span class="logout-emblem"></span>Logout
+                    </a>
+                </div>
+            </li>
+            {% endif %}
+        </div>
+
     </div>
 </nav>
 
 <!-- Flash messages -->
 {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            {% if category == 'error' %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button
-                        type="button"
-                        class="close"
-                        data-dismiss="alert"
-                        aria-label="Close"
-                    >
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {% else %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button
-                        type="button"
-                        class="close"
-                        data-dismiss="alert"
-                        aria-label="Close"
-                    >
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+{% if messages %}
+{% for category, message in messages %}
+{% if category == 'error' %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button
+            type="button"
+            class="close"
+            data-dismiss="alert"
+            aria-label="Close"
+    >
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% else %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button
+            type="button"
+            class="close"
+            data-dismiss="alert"
+            aria-label="Close"
+    >
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
 {% endwith %}
 
 
@@ -211,22 +248,20 @@ body {
 <!-- THOMAS NGUYEN ADDING Include ESRI Leaflet JS library for ESRI layers satellite images -->
 <script src="https://unpkg.com/esri-leaflet/dist/esri-leaflet.js"></script>
 
-
 <script
-    src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-    crossorigin="anonymous"
+        src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        crossorigin="anonymous"
 ></script>
 <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-    crossorigin="anonymous"
+        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        crossorigin="anonymous"
 ></script>
 <script
-    src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-    crossorigin="anonymous"
+        src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        crossorigin="anonymous"
 ></script>
 
 {% block javascript %}
-    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
 {% endblock %}
-</body>
 </html>

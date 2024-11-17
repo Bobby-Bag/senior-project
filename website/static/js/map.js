@@ -133,7 +133,7 @@ function adjustImageSizes() {
     const images = document.querySelectorAll('.map-photo');
 
     // Set new minimum and maximum sizes for the images
-    const minSize = 100;   // Increased minimum size
+    const minSize = 130;   // Increased minimum size
     const maxSize = 200;  // Increased maximum size
 
     // Calculate the size based on the zoom level, ensure it's within [minSize, maxSize] range
