@@ -8,6 +8,7 @@
     <style>
         body {
             background-color: #f8f9fa;
+                            background-image: url("{{ url_for('static', filename='images/login.jpg') }}");
         }
         #map {
             height: 500px;
@@ -34,7 +35,8 @@
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script type="text/javascript">
+    <script>
+        // Initialize the map
         function initMap() {
             var map = L.map('map').setView([0, 0], 2);
 
@@ -45,11 +47,11 @@
             var pins = {{ pins|tojson }};
             var bounds = L.latLngBounds();
 
+            // Add pins to map
             pins.forEach(pin => {
                 var position = [pin.lat, pin.lng];
                 var photoElements = pin.photos.map(photo => '<img src="' + photo + '" alt="User Photo" style="width:100%;height:auto;">');
                 var popupContent = photoElements.join('');
-
                 bounds.extend(position);
                 L.marker(position).addTo(map).bindPopup(popupContent);
             });
@@ -57,12 +59,140 @@
             if (pins.length > 0) {
                 map.fitBounds(bounds);
             }
+
+            // Adjust image sizes initially to set a reasonable starting size
+            adjustImageSizes();
+
+            // Add zoom event listener to adjust image sizes smoothly
+            map.on('zoom', adjustImageSizes);
+        }
+
+        // Function to create a marker and add it to the map
+        function createMarker(lat, lng) {
+            const roundedLat = lat.toFixed(5);
+            const roundedLng = lng.toFixed(5);
+            const marker = L.marker([lat, lng]).addTo(map);
+            markers[`${roundedLat},${roundedLng}`] = marker;
+
+            // Fetch existing photos and bind popup
+            fetch(`/get_pin?lat=${roundedLat}&lng=${roundedLng}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.pin.photos.length === 0) {
+                            deleteMarker(lat, lng);
+                        } else {
+                            marker.bindPopup(getPopupContent(lat, lng, data.pin.photos), { autoClose: false }).openPopup();
+                            adjustImageSizes();
+                        }
+                    } else {
+                        marker.bindPopup(getPopupContent(lat, lng), { autoClose: false }).openPopup();
+                        adjustImageSizes();
+                    }
+                }).catch(error => {
+                    console.error("Error fetching photos for pin:", error);
+                });
+
+            savePin(lat, lng);
+            return marker;
+        }
+
+        // Function to create markers on initial load
+        function createMarkersOnLoad(lat, lng) {
+            const roundedLat = lat.toFixed(5);
+            const roundedLng = lng.toFixed(5);
+            const marker = L.marker([lat, lng]).addTo(map);
+            markers[`${roundedLat},${roundedLng}`] = marker;
+
+            fetch(`/get_pin?lat=${roundedLat}&lng=${roundedLng}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.pin.photos.length === 0) {
+                            deleteMarker(lat, lng);
+                        } else {
+                            marker.bindPopup(getPopupContent(lat, lng, data.pin.photos), { autoClose: false }).openPopup();
+                            adjustImageSizes();
+                        }
+                    } else {
+                        marker.bindPopup(getPopupContent(lat, lng), { autoClose: false }).openPopup();
+                        adjustImageSizes();
+                    }
+                }).catch(error => {
+                    console.error("Error fetching photos for pin:", error);
+                });
+        }
+
+        // Function to get popup content
+        function getPopupContent(lat, lng, photos = []) {
+            let photoGallery = photos.map(url =>
+                `<img class="map-photo" src="${url.substring(8)}"
+                      style="margin: 5px; object-fit: contain; transition: width 0.2s, height 0.2s;">`).join('');
+
+            const uploadButton = photos.length > 0 ? '' : `<button onclick="triggerFileInput(${lat}, ${lng})" style="font-size: 0.75em; padding: 3px 5px;">Upload</button>`;
+
+            return `<div class="popup-content" style="width: 220px; padding: 5px; box-sizing: border-box; border: 0px solid black;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">
+                            ${photoGallery}
+                        </div>
+                        <div style="display: flex; gap: 5px; margin-top: 5px; justify-content: center;">
+                            <button onclick="deleteMarker(${lat}, ${lng})" style="font-size: 0.75em; padding: 3px 5px;">Delete</button>
+                            ${uploadButton}
+                        </div>
+                        <input type="file" id="fileInput" style="display: none;" accept="image/*">
+                    </div>`;
+        }
+
+        // Function to adjust image sizes based on the zoom level
+        function adjustImageSizes() {
+            const zoom = map.getZoom();
+            const images = document.querySelectorAll('.map-photo');
+
+            const minSize = 100;
+            const maxSize = 200;
+
+            const size = Math.min(maxSize, Math.max(minSize, zoom * 10));
+
+            images.forEach(img => {
+                img.style.width = `${size}px`;
+                img.style.height = `${size}px`;
+                img.style.objectFit = 'contain';
+                img.style.transition = 'width 0.2s, height 0.2s';
+                img.style.maxWidth = `${maxSize}px`;
+                img.style.maxHeight = `${maxSize}px`;
+            });
         }
 
         window.onload = initMap;
+
+        // Custom styles for Leaflet popups
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .leaflet-popup-content-wrapper {
+                border: none !important;
+                padding: 0 !important;
+                background: none !important;
+            }
+
+            .leaflet-popup-tip-container {
+                display: none !important;
+            }
+
+            .leaflet-popup-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: none !important;
+            }
+
+            .popup-content {
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
